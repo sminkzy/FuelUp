@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FuelUp - Athlete Meal Planning</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --card: #ffffff;
+      --text: #171717;
+      --muted: #6b6b6b;
+      --accent: #1d7a46;
+      --accent-dark: #135832;
+      --border: #e4dfd5;
+      --shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #e6f6df, var(--bg) 45%);
+      color: var(--text);
+    }
+
+    .app-shell {
+      width: min(1100px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 60px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 36px;
+      letter-spacing: -1px;
+    }
+
+    .topbar p {
+      margin: 4px 0 0;
+      color: var(--muted);
+    }
+
+    .hero-card {
+      background: linear-gradient(135deg, #102217, #1f8c50);
+      color: white;
+      border-radius: 28px;
+      padding: 34px;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+
+    .hero-card h2 {
+      max-width: 700px;
+      font-size: clamp(32px, 6vw, 60px);
+      line-height: 0.94;
+      letter-spacing: -2.4px;
+      margin: 14px 0;
+    }
+
+    .hero-card p {
+      max-width: 660px;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 18px;
+    }
+
+    .pill {
+      display: inline-flex;
+      border: 1px solid rgba(255,255,255,0.35);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      letter-spacing: 0.2px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.88);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .card h3 {
+      margin: 0 0 16px;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 13px 14px;
+      margin-top: 6px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: white;
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .row input { flex: 1; }
+    .row select { width: 92px; }
+
+    button {
+      border: 0;
+      background: var(--accent);
+      color: white;
+      padding: 13px 16px;
+      border-radius: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    button:hover { background: var(--accent-dark); }
+
+    .ghost-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .section-heading p {
+      margin: -8px 0 0;
+      color: var(--muted);
+    }
+
+    .plan-output { display: grid; gap: 12px; }
+
+    .empty {
+      color: var(--muted);
+      padding: 18px;
+      border: 1px dashed var(--border);
+      border-radius: 18px;
+    }
+
+    .plan-item {
+      border: 1px solid var(--border);
+      background: #fbfaf7;
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .plan-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 17px;
+    }
+
+    .plan-item span {
+      display: inline-block;
+      color: var(--accent-dark);
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .check-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .check-list li {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .check-list input {
+      width: auto;
+      margin: 0;
+    }
+
+    .stack { display: grid; gap: 12px; }
+
+    .option {
+      background: #fbfaf7;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .option strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .muted { color: var(--muted); }
+
+    .status {
+      margin-top: 12px;
+      font-weight: 800;
+      color: var(--accent-dark);
+      min-height: 22px;
+    }
+
+    .team-score {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      background: #fbfaf7;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      margin-top: 14px;
+    }
+
+    .team-score span {
+      font-size: 46px;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      color: var(--accent);
+    }
+
+    .team-score p {
+      margin: 0;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    @media (max-width: 760px) {
+      .grid, .section-heading, .team-score {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .hero-card { padding: 24px; }
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1>FuelUp</h1>
+        <p>Meal timing made simple for busy athletes.</p>
+      </div>
+      <button id="resetBtn" class="ghost-btn" type="button">Reset</button>
+    </header>
+
+    <main>
+      <section class="hero-card">
+        <div>
+          <span class="pill">Single File MVP</span>
+          <h2>Know what to eat, when to eat, and how to prep it.</h2>
+          <p>
+            FuelUp builds a simple food plan around your school, work, training,
+            and game schedule — so you do not have to rely on willpower.
+          </p>
+        </div>
+      </section>
+
+      <section class="grid">
+        <form id="profileForm" class="card">
+          <h3>1. Athlete Profile</h3>
+
+          <label>Name
+            <input id="name" type="text" placeholder="Max" />
+          </label>
+
+          <label>Sport
+            <input id="sport" type="text" placeholder="Rugby" />
+          </label>
+
+          <label>Body weight
+            <div class="row">
+              <input id="weight" type="number" min="1" placeholder="192" />
+              <select id="weightUnit">
+                <option value="lb">lb</option>
+                <option value="kg">kg</option>
+              </select>
+            </div>
+          </label>
+
+          <label>Main goal
+            <select id="goal">
+              <option value="performance">Perform better</option>
+              <option value="muscle">Gain muscle</option>
+              <option value="lean">Stay lean</option>
+              <option value="maintenance">Maintain weight</option>
+            </select>
+          </label>
+
+          <label>Daily schedule
+            <select id="busyLevel">
+              <option value="medium">Busy</option>
+              <option value="high">Very busy</option>
+              <option value="extreme">No time at all</option>
+            </select>
+          </label>
+
+          <button type="submit">Save Profile</button>
+          <div id="profileStatus" class="status"></div>
+        </form>
+
+        <form id="sessionForm" class="card">
+          <h3>2. Add Training / Game</h3>
+
+          <label>Session type
+            <select id="sessionType">
+              <option value="practice">Practice</option>
+              <option value="gym">Gym</option>
+              <option value="conditioning">Conditioning</option>
+              <option value="game">Game</option>
+            </select>
+          </label>
+
+          <label>Date
+            <input id="sessionDate" type="date" />
+          </label>
+
+          <label>Start time
+            <input id="sessionTime" type="time" />
+          </label>
+
+          <label>Intensity
+            <select id="intensity">
+              <option value="light">Light</option>
+              <option value="moderate">Moderate</option>
+              <option value="hard">Hard</option>
+            </select>
+          </label>
+
+          <button type="submit">Add Session</button>
+          <div id="sessionStatus" class="status"></div>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="section-heading">
+          <div>
+            <h3>3. Auto Fuel Plan</h3>
+            <p>FuelUp turns your schedule into simple meal timing.</p>
+          </div>
+          <button id="generateBtn" type="button">Generate Plan</button>
+        </div>
+
+        <div id="planOutput" class="plan-output empty">
+          Add your profile and a training session, then generate your plan.
+        </div>
+      </section>
+
+      <section class="grid">
+        <section class="card">
+          <h3>Grocery List</h3>
+          <ul id="groceryList" class="check-list"></ul>
+        </section>
+
+        <section class="card">
+          <h3>No-Time Emergency Options</h3>
+          <div id="emergencyOptions" class="stack"></div>
+        </section>
+      </section>
+
+      <section class="card">
+        <h3>Team Accountability</h3>
+        <p class="muted">
+          This feature helps fix the willpower problem. Athletes check off their pre-training fuel
+          and build a team score.
+        </p>
+        <div class="team-score">
+          <div>
+            <span id="teamPercent">0%</span>
+            <p>Team Fuel Score</p>
+          </div>
+          <button id="checkInBtn" type="button">I fueled today</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const profileForm = document.getElementById("profileForm");
+      const sessionForm = document.getElementById("sessionForm");
+      const generateBtn = document.getElementById("generateBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const checkInBtn = document.getElementById("checkInBtn");
+
+      const profileStatus = document.getElementById("profileStatus");
+      const sessionStatus = document.getElementById("sessionStatus");
+      const planOutput = document.getElementById("planOutput");
+      const groceryList = document.getElementById("groceryList");
+      const emergencyOptions = document.getElementById("emergencyOptions");
+      const teamPercent = document.getElementById("teamPercent");
+
+      let state = {
+        profile: {},
+        sessions: [],
+        checkIns: 0,
+        possibleCheckIns: 7
+      };
+
+      try {
+        const saved = localStorage.getItem("fuelup-state-single");
+        if (saved) state = JSON.parse(saved);
+      } catch (e) {
+        console.log("Local storage unavailable. App will still run.");
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem("fuelup-state-single", JSON.stringify(state));
+        } catch (e) {
+          console.log("Could not save locally.");
+        }
+      }
+
+      function setDefaultDate() {
+        const today = new Date();
+        document.getElementById("sessionDate").value = today.toISOString().split("T")[0];
+        document.getElementById("sessionTime").value = "18:30";
+      }
+
+      function loadProfile() {
+        const p = state.profile || {};
+        document.getElementById("name").value = p.name || "";
+        document.getElementById("sport").value = p.sport || "";
+        document.getElementById("weight").value = p.weight || "";
+        document.getElementById("weightUnit").value = p.weightUnit || "lb";
+        document.getElementById("goal").value = p.goal || "performance";
+        document.getElementById("busyLevel").value = p.busyLevel || "medium";
+      }
+
+      function getProfileFromForm() {
+        return {
+          name: document.getElementById("name").value.trim() || "Athlete",
+          sport: document.getElementById("sport").value.trim() || "Sport",
+          weight: document.getElementById("weight").value || "N/A",
+          weightUnit: document.getElementById("weightUnit").value,
+          goal: document.getElementById("goal").value,
+          busyLevel: document.getElementById("busyLevel").value
+        };
+      }
+
+      function getSessionFromForm() {
+        return {
+          sessionType: document.getElementById("sessionType").value,
+          date: document.getElementById("sessionDate").value,
+          time: document.getElementById("sessionTime").value,
+          intensity: document.getElementById("intensity").value
+        };
+      }
+
+      function formatTime(dateString, timeString, offsetMinutes) {
+        if (!dateString || !timeString) return "Time not set";
+        const date = new Date(dateString + "T" + timeString);
+        date.setMinutes(date.getMinutes() + offsetMinutes);
+        return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+      }
+
+      function getFuelPlan(session, profile) {
+        const hard = session.intensity === "hard" || session.sessionType === "game";
+        const veryBusy = profile.busyLevel === "extreme" || profile.busyLevel === "high";
+
+        const preMeal = hard
+          ? "Rice bowl, pasta, oats, or a bagel with lean protein. Keep it familiar and not too greasy."
+          : "Sandwich, oats, smoothie, yogurt bowl, or leftovers with carbs and protein.";
+
+        const preSnack = hard
+          ? "Banana + granola bar + electrolyte drink."
+          : "Banana, yogurt, toast, fruit snacks, or a protein bar.";
+
+        const postMeal = profile.goal === "muscle"
+          ? "High-protein recovery meal with carbs: chicken/rice, beef wrap, eggs/toast, or protein smoothie plus a real meal."
+          : "Protein + carbs: rice bowl, wrap, smoothie, chocolate milk, or leftovers.";
+
+        const prep = veryBusy
+          ? "Prep one carb, one protein, and one sauce. Example: rice + chicken + teriyaki. Build meals in 5 minutes."
+          : "Cook 2 proteins and 2 carbs for the week. Mix with simple sauces so meals do not feel repetitive.";
+
+        return [
+          {
+            label: formatTime(session.date, session.time, -180) + " - Main meal",
+            title: "3 hours before",
+            body: preMeal
+          },
+          {
+            label: formatTime(session.date, session.time, -60) + " - Quick fuel",
+            title: "60 minutes before",
+            body: preSnack
+          },
+          {
+            label: formatTime(session.date, session.time, 30) + " - Recovery",
+            title: "Within 30-60 minutes after",
+            body: postMeal
+          },
+          {
+            label: "Weekly prep",
+            title: "Make the easy choice ready",
+            body: prep
+          }
+        ];
+      }
+
+      function getGroceryItems(profile) {
+        const base = [
+          "Rice or pasta",
+          "Oats or bagels",
+          "Chicken, beef, eggs, tofu, or Greek yogurt",
+          "Bananas",
+          "Granola bars",
+          "Frozen fruit",
+          "Electrolyte packets",
+          "Wraps or bread",
+          "Simple sauce: teriyaki, salsa, or hot sauce"
+        ];
+
+        if (profile.goal === "muscle") {
+          base.push("Chocolate milk or protein powder");
+          base.push("Peanut butter");
+        }
+
+        if (profile.busyLevel === "extreme") {
+          base.push("Microwave rice packs");
+          base.push("Ready-made rotisserie chicken");
+        }
+
+        return base;
+      }
+
+      function getEmergencyOptions(profile) {
+        const options = [
+          { title: "No cooking", body: "Chocolate milk + banana + protein bar." },
+          { title: "5-minute meal", body: "Microwave rice + rotisserie chicken + sauce." },
+          { title: "Before practice", body: "Bagel + peanut butter or honey + water/electrolytes." },
+          { title: "After practice", body: "Greek yogurt + granola + fruit, or a wrap with protein." }
+        ];
+
+        if (profile.goal === "lean") {
+          options.push({ title: "Lean option", body: "Turkey wrap + fruit. Simple, filling, and not heavy." });
+        }
+
+        return options;
+      }
+
+      function renderPlan() {
+        const profile = state.profile && state.profile.name ? state.profile : getProfileFromForm();
+        let session = state.sessions.length > 0 ? state.sessions[state.sessions.length - 1] : getSessionFromForm();
+
+        if (!session.date || !session.time) {
+          planOutput.className = "plan-output empty";
+          planOutput.textContent = "Please add a date and start time for your session first.";
+          return;
+        }
+
+        state.profile = profile;
+        state.sessions = [session];
+        saveState();
+
+        const plan = getFuelPlan(session, profile);
+
+        planOutput.className = "plan-output";
+        planOutput.innerHTML = plan.map(item => `
+          <div class="plan-item">
+            <span>${item.label}</span>
+            <strong>${item.title}</strong>
+            <p>${item.body}</p>
+          </div>
+        `).join("");
+
+        renderGroceryList();
+        renderEmergencyOptions();
+      }
+
+      function renderGroceryList() {
+        const items = getGroceryItems(state.profile || getProfileFromForm());
+        groceryList.innerHTML = items.map(item => `
+          <li>
+            <input type="checkbox" />
+            <span>${item}</span>
+          </li>
+        `).join("");
+      }
+
+      function renderEmergencyOptions() {
+        const options = getEmergencyOptions(state.profile || getProfileFromForm());
+        emergencyOptions.innerHTML = options.map(option => `
+          <div class="option">
+            <strong>${option.title}</strong>
+            <span>${option.body}</span>
+          </div>
+        `).join("");
+      }
+
+      function renderTeamScore() {
+        const percent = Math.round((state.checkIns / state.possibleCheckIns) * 100);
+        teamPercent.textContent = Math.min(percent, 100) + "%";
+      }
+
+      profileForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        state.profile = getProfileFromForm();
+        saveState();
+        profileStatus.textContent = "Profile saved.";
+      });
+
+      sessionForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        const session = getSessionFromForm();
+
+        if (!session.date || !session.time) {
+          sessionStatus.textContent = "Add a date and time first.";
+          return;
+        }
+
+        state.sessions = [session];
+        saveState();
+        sessionStatus.textContent = "Session added.";
+      });
+
+      generateBtn.addEventListener("click", function () {
+        state.profile = getProfileFromForm();
+        state.sessions = [getSessionFromForm()];
+        saveState();
+        renderPlan();
+      });
+
+      checkInBtn.addEventListener("click", function () {
+        state.checkIns += 1;
+        saveState();
+        renderTeamScore();
+      });
+
+      resetBtn.addEventListener("click", function () {
+        try {
+          localStorage.removeItem("fuelup-state-single");
+        } catch (e) {}
+
+        state = {
+          profile: {},
+          sessions: [],
+          checkIns: 0,
+          possibleCheckIns: 7
+        };
+
+        loadProfile();
+        setDefaultDate();
+        planOutput.className = "plan-output empty";
+        planOutput.textContent = "Add your profile and a training session, then generate your plan.";
+        groceryList.innerHTML = "";
+        emergencyOptions.innerHTML = "";
+        profileStatus.textContent = "";
+        sessionStatus.textContent = "";
+        renderTeamScore();
+      });
+
+      loadProfile();
+      setDefaultDate();
+      renderTeamScore();
+    });
+  </script>
+</body>
+</html>
